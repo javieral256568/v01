@@ -1,26 +1,156 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
 
 ## .\uvicorn_start.bat
 ## .\uvicorn_stop.bat
 
 app = FastAPI()
 
+
+DATABASE_URL = "postgresql://postgres:oAsNnJNByWEiKBJUpJYyKGNxlparYhxv@crossover.proxy.rlwy.net:11328/railway"
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+# this comment contain the database tables:
+"""
+first table:signal_list
+columns: signal_list_id, signal_list_name, timeframe, trigger_usability
+
+second table:signals
+columns: signal_list_id, indicator, indicator_order_to_be_significant, signalname, active
+"""
+
+
 class Item(BaseModel):
     name: str
     description: str = None
 
-@app.post("/items/")
-async def create_item(item: Item, request: Request):
-    content_type = request.headers.get("content-type")
-<<<<<<< HEAD
-    print("name:",item.name," desc:",item.description)
+class signal(BaseModel):    
+    signal_list_name: str
+    timeframe: str
+    trigger_usability: str
+    signalname: str
+    command: str
 
-=======
-    print("name:",item.name," desc:",item.desciption)
->>>>>>> a056bd7962c5a2adb6c07ec10bcaba472afbd047
-    return {
-        "name": item.name,
-        "description2": item.description,
-        "content_type": content_type
-    }
+
+
+@app.post("/items/")
+async def create_item(inParams: signal):
+    try:
+        
+        # Example SELECT query
+        #---------------------- OPEN DATABASE ---------------
+        db = SessionLocal()
+        #----------------------------------------------------
+
+        ##**************************************************************************
+        ##                            READ SIGNAL ID
+        ##**************************************************************************
+
+        """ api input parameters:
+                signal_list_name: str
+                timeframe: str
+                trigger_usability: str
+                signalname: str
+                command: str
+        """
+
+        sql_text = """ SELECT tbl_s.signal_id 
+                  FROM signals as tbl_s
+                  inner join signal_list as tbl_sl ON tbl_sl.signal_list_id = tbl_s.signal_list_id
+                  WHERE tbl_sl.signal_list_name = :signal_list_name
+                  AND tbl_sl.timeframe = :timeframe
+                  AND tbl_sl.trigger_usability = :trigger_usability
+                  AND tbl_s.signalname = :signalname
+                """
+        sql_text = sql_text.replace("\n"," ")
+        result = db.execute( text(sql_text),
+            {"signal_list_name": inParams.signal_list_name
+             , "timeframe": inParams.timeframe
+             , "trigger_usability": inParams.trigger_usability
+             , "signalname": inParams.signalname
+            }
+        )
+        row = result.fetchone()
+        print('\n\r*** row:',row.signal_id)
+        
+        ##**************************************************************************
+        ##                            READ COMMAND
+        ##**************************************************************************
+
+        command_active_value = -1
+        if inParams.command == 'ema9<=ema55':
+            ##  ema9<=ema55 (active=1)
+            command_active_value = 1
+        elif inParams.command == 'ema9>ema55':
+            ##  ema9>ema55 (active=0)
+            command_active_value = 0
+
+        if command_active_value == -1:
+            raise Exception("Invalid command value")
+        
+        
+        ##***************************************************************************
+        ##                            UPDATE SIGNAL
+        ##**************************************************************************
+
+        update_query = text("""
+            UPDATE signals
+            SET active = :command_active_value
+            WHERE signal_id = :signal_id
+        """)
+        update_params = {
+            "command_active_value": command_active_value,
+            "signal_id": row.signal_id,
+        }
+        db.execute(update_query, update_params)
+        
+        ##***************************************************************************
+        ##                            COMMIT CHANGES
+        ##**************************************************************************
+        db.commit()
+
+        ## Return the updated row ID or any other relevant information
+        return {
+            "result": "OK",
+            "error": "NA",
+        }
+    except SQLAlchemyError as e:
+        print("Database Error:", e)
+        return {"result":"NG",
+                "error": str(e)}
+    except Exception as e:
+        print("Error:", e)
+        return {"result":"NG",
+                "error": str(e)}
+    finally:
+        if 'db' in locals():
+            db.close()
+    
+    
+
+
+
+    '''
+    ## Insert a new row into signal_list
+        #insert_query = text("""
+        #    INSERT INTO signal_list (signal_list_name, timeframe, trigger_usability)
+        #    VALUES (:name, :timeframe, :trigger_usability)
+        #    RETURNING signal_list_id
+        #""")
+        ## Example values for timeframe and trigger_usability
+        #params = {
+        #    "name": item.name,
+        #    "timeframe": "1h",
+        #    "trigger_usability": True
+        #}
+        #insert_result = db.execute(insert_query, params)
+        #db.commit()
+        #inserted_id = insert_result.fetchone()[0]
+        #print("Inserted signal_list_id:", inserted_id)
+
+    '''
