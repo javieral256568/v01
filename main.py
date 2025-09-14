@@ -116,8 +116,8 @@ async def create_item(inParams: signal):
 
         ## Return the updated row ID or any other relevant information
         return {
-            "result": "OK",
-            "error": "NA",
+            "resultx": "OK",
+            "errorx": "NA",
         }
     except SQLAlchemyError as e:
         print("Database Error:", e)
