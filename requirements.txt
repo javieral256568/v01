@@ -2,3 +2,7 @@ fastapi
 uvicorn[standard]
 pydantic
 requests
+sqlalchemy>=2.0
+asyncpg
+aiomysql
+psycopg2-binary
