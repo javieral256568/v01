@@ -10,6 +10,7 @@ class Item(BaseModel):
 @app.post("/items/")
 async def create_item(item: Item, request: Request):
     content_type = request.headers.get("content-type")
+    print("name:",item.name," desc:",item.desciption)
     return {
         "name": item.name,
         "description": item.description,
