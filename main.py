@@ -41,83 +41,84 @@ class signal(BaseModel):
 @app.post("/items/")
 async def create_item(inParams: signal):
     try:
-        
-        # Example SELECT query
-        #---------------------- OPEN DATABASE ---------------
-        db = SessionLocal()
-        #----------------------------------------------------
-
-        ##**************************************************************************
-        ##                            READ SIGNAL ID
-        ##**************************************************************************
-
-        """ api input parameters:
-                signal_list_name: str
-                timeframe: str
-                trigger_usability: str
-                signalname: str
-                command: str
-        """
-
-        sql_text = """ SELECT tbl_s.signal_id 
-                  FROM signals as tbl_s
-                  inner join signal_list as tbl_sl ON tbl_sl.signal_list_id = tbl_s.signal_list_id
-                  WHERE tbl_sl.signal_list_name = :signal_list_name
-                  AND tbl_sl.timeframe = :timeframe
-                  AND tbl_sl.trigger_usability = :trigger_usability
-                  AND tbl_s.signalname = :signalname
-                """
-        sql_text = sql_text.replace("\n"," ")
-        result = db.execute( text(sql_text),
-            {"signal_list_name": inParams.signal_list_name
-             , "timeframe": inParams.timeframe
-             , "trigger_usability": inParams.trigger_usability
-             , "signalname": inParams.signalname
-            }
-        )
-        row = result.fetchone()
-        print('\n\r*** row:',row.signal_id)
-        
-        ##**************************************************************************
-        ##                            READ COMMAND
-        ##**************************************************************************
-
-        command_active_value = -1
-        if inParams.command == 'ema9<=ema55':
-            ##  ema9<=ema55 (active=1)
-            command_active_value = 1
-        elif inParams.command == 'ema9>ema55':
-            ##  ema9>ema55 (active=0)
-            command_active_value = 0
-
-        if command_active_value == -1:
-            raise Exception("Invalid command value")
-        
-        
-        ##***************************************************************************
-        ##                            UPDATE SIGNAL
-        ##**************************************************************************
-
-        update_query = text("""
-            UPDATE signals
-            SET active = :command_active_value
-            WHERE signal_id = :signal_id
-        """)
-        update_params = {
-            "command_active_value": command_active_value,
-            "signal_id": row.signal_id,
-        }
-        db.execute(update_query, update_params)
-        
-        ##***************************************************************************
-        ##                            COMMIT CHANGES
-        ##**************************************************************************
-        db.commit()
+        #
+        ## Example SELECT query
+        ##---------------------- OPEN DATABASE ---------------
+        #db = SessionLocal()
+        ##----------------------------------------------------
+#
+        ###**************************************************************************
+        ###                            READ SIGNAL ID
+        ###**************************************************************************
+#
+        #""" api input parameters:
+        #        signal_list_name: str
+        #        timeframe: str
+        #        trigger_usability: str
+        #        signalname: str
+        #        command: str
+        #"""
+#
+        #sql_text = """ SELECT tbl_s.signal_id 
+        #          FROM signals as tbl_s
+        #          inner join signal_list as tbl_sl ON tbl_sl.signal_list_id = tbl_s.signal_list_id
+        #          WHERE tbl_sl.signal_list_name = :signal_list_name
+        #          AND tbl_sl.timeframe = :timeframe
+        #          AND tbl_sl.trigger_usability = :trigger_usability
+        #          AND tbl_s.signalname = :signalname
+        #        """
+        #sql_text = sql_text.replace("\n"," ")
+        #result = db.execute( text(sql_text),
+        #    {"signal_list_name": inParams.signal_list_name
+        #     , "timeframe": inParams.timeframe
+        #     , "trigger_usability": inParams.trigger_usability
+        #     , "signalname": inParams.signalname
+        #    }
+        #)
+        #row = result.fetchone()
+        #print('\n\r*** row:',row.signal_id)
+        #
+        ###**************************************************************************
+        ###                            READ COMMAND
+        ###**************************************************************************
+#
+        #command_active_value = -1
+        #if inParams.command == 'ema9<=ema55':
+        #    ##  ema9<=ema55 (active=1)
+        #    command_active_value = 1
+        #elif inParams.command == 'ema9>ema55':
+        #    ##  ema9>ema55 (active=0)
+        #    command_active_value = 0
+#
+        #if command_active_value == -1:
+        #    raise Exception("Invalid command value")
+        #
+        #
+        ###***************************************************************************
+        ###                            UPDATE SIGNAL
+        ###**************************************************************************
+#
+        #update_query = text("""
+        #    UPDATE signals
+        #    SET active = :command_active_value
+        #    WHERE signal_id = :signal_id
+        #""")
+        #update_params = {
+        #    "command_active_value": command_active_value,
+        #    "signal_id": row.signal_id,
+        #}
+        #db.execute(update_query, update_params)
+        #
+        ###***************************************************************************
+        ###                            COMMIT CHANGES
+        ###**************************************************************************
+        #db.commit()
 
         ## Return the updated row ID or any other relevant information
         return {
             "resultx": "OK",
             "errorx": "NA",
+            "inParams": inParams,
         }
     except SQLAlchemyError as e:
         print("Database Error:", e)
