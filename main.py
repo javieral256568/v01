@@ -82,16 +82,13 @@ async def create_item(inParams: signal):
         ##                            READ COMMAND
         ##**************************************************************************
 
-        command_active_value = -1
-        if inParams.command == 'ema9<=ema55':
-            ##  ema9<=ema55 (active=1)
-            command_active_value = 1
-        elif inParams.command == 'ema9>ema55':
-            ##  ema9>ema55 (active=0)
-            command_active_value = 0
-
-        if command_active_value == -1:
-            raise Exception("Invalid command value")
+        is_signal_active = -1
+        if inParams.is_signal_active == '1':
+            is_signal_active = 1
+        elif inParams.is_signal_active == '0':
+            is_signal_active = 0
+        if is_signal_active == -1:
+            raise Exception("Invalid is_signal_active value")
         
         
         ##***************************************************************************
@@ -100,11 +97,11 @@ async def create_item(inParams: signal):
 
         update_query = text("""
             UPDATE signals
-            SET active = :command_active_value
+            SET active = :is_signal_active
             WHERE signal_id = :signal_id
         """)
         update_params = {
-            "command_active_value": command_active_value,
+            "is_signal_active": is_signal_active,
             "signal_id": row.signal_id,
         }
         db.execute(update_query, update_params)
@@ -155,3 +152,29 @@ async def create_item(inParams: signal):
         #print("Inserted signal_list_id:", inserted_id)
 
     '''
+
+
+
+
+    ##**************************** Railway Config ******************************
+    ## Railway start command:
+    ## uvicorn main:app --host 0.0.0.0 --port $PORT
+    ##
+    ##
+    ## Railway how to call the API:
+    ## https://fastapi-app-production-d82b.up.railway.app/items/
+    ##
+    ## Example of input parameters:
+    ##**************************************************************************
+    ##  {
+    ##  "signal_list_name": "eth_usd",
+    ##  "timeframe": "5m",
+    ##  "trigger_usability": "buy",
+    ##  "signalname": "ema9<=ema55",
+    ##  "command": "ema9>ema55"
+    ##  }
+    ##
+    ## 
+
+
+    ##**************************************************************************
