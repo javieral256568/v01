@@ -34,7 +34,7 @@ class signal(BaseModel):
     timeframe: str
     trigger_usability: str
     signalname: str
-    command: str
+    is_signal_active: str
 
 
 
