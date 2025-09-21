@@ -100,7 +100,7 @@ async def create_item(inParams: signal):
             }
         )
         row = result.fetchone()
-        print('\n\r*** row:',row.signal_id)
+        
         
         ##**************************************************************************
         ##                            READ COMMAND
