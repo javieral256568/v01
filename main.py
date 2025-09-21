@@ -74,13 +74,21 @@ async def create_item(inParams: signal):
                 command: str
         """
 
-        sql_text = """ SELECT tbl_s.signal_id 
-                  FROM signals as tbl_s
-                  inner join signal_list as tbl_sl ON tbl_sl.signal_list_id = tbl_s.signal_list_id
-                  WHERE tbl_sl.signal_list_name = :signal_list_name
-                  AND tbl_sl.timeframe = :timeframe
-                  AND tbl_sl.trigger_usability = :trigger_usability
-                  AND tbl_s.signalname = :signalname
+        #sql_text = """ SELECT tbl_s.signal_id 
+        #          FROM signals as tbl_s
+        #          inner join signal_list as tbl_sl ON tbl_sl.signal_list_id = tbl_s.signal_list_id
+        #          WHERE tbl_sl.signal_list_name = :signal_list_name
+        #          AND tbl_sl.timeframe = :timeframe
+        #          AND tbl_sl.trigger_usability = :trigger_usability
+        #          AND tbl_s.signalname = :signalname
+        #        """
+        sql_text = """ SSELECT h.signal_list_name, h.trigger_usability,h.timeframe,
+                        d.indic_order_significant as priority, d.signalname, d.active
+                    FROM public.signal_list h
+                    inner join public.signals d on d.signal_list_id = h.signal_list_id 
+                    where d.active = 1
+                    and h.signal_list_name = 'signal_list_name'
+                    order by h.signal_list_name, h.trigger_usability,h.timeframe_order, d.indic_order_significant
                 """
         sql_text = sql_text.replace("\n"," ")
         result = db.execute( text(sql_text),
