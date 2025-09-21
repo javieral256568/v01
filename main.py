@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -9,6 +10,20 @@ from sqlalchemy.exc import SQLAlchemyError
 
 app = FastAPI()
 
+# 👇 Only allow your Vue app's Railway domain
+origins = [
+    "https://webmonitorv002-production.up.railway.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,   # your frontend domain
+    allow_credentials=True,
+    allow_methods=["*"],     # allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],     # allow all headers
+)
+
+## **************************************************************************
 
 DATABASE_URL = "postgresql://postgres:oAsNnJNByWEiKBJUpJYyKGNxlparYhxv@crossover.proxy.rlwy.net:11328/railway"
 engine = create_engine(DATABASE_URL)
