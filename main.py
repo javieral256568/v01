@@ -183,8 +183,7 @@ async def consultAll(inParams: signal):
                             d."indicator",d.indic_order_significant as priority, d.signalname, d.active
                         FROM public.signal_list h
                         inner join public.signals d on d.signal_list_id = h.signal_list_id 
-                        where h.signal_list_name = :signal_list_name 
-                        --and d.active = 1
+                        where h.signal_list_name = :signal_list_name
                         order by h.signal_list_name, h.trigger_usability,h.timeframe_order,d."indicator" , d.indic_order_significant
                 ; """
         
@@ -196,7 +195,10 @@ async def consultAll(inParams: signal):
              , "signalname": inParams.signalname
             }
         )
-        dataFrame_result = pd.DataFrame(result.fetchall(), columns=result.keys())
+        # Fetch all results as a list of Row objects
+        rows = result.fetchall()
+        # Create DataFrame preserving the order of the query result
+        dataFrame_result = pd.DataFrame(rows, columns=result.keys())
       
         
         ##***************************************************************************
