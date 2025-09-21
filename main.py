@@ -87,7 +87,7 @@ async def create_item(inParams: signal):
                     FROM public.signal_list h
                     inner join public.signals d on d.signal_list_id = h.signal_list_id 
                     where d.active =  1
-                    and h.signal_list_name = ':signal_list_name'
+                    and h.signal_list_name = :signal_list_name
                     order by h.signal_list_name, h.trigger_usability,h.timeframe_order, d.indic_order_significant
                 """
         
