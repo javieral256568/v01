@@ -179,14 +179,14 @@ async def consultAll(inParams: signal):
         """
 
 
-        sql_text = """ SELECT h.signal_list_name, h.trigger_usability,h.timeframe,
-                        d.indic_order_significant as priority, d.signalname, d.active
-                    FROM public.signal_list h
-                    inner join public.signals d on d.signal_list_id = h.signal_list_id 
-                    where d.active =  1
-                    and h.signal_list_name = :signal_list_name
-                    order by h.signal_list_name, h.trigger_usability,h.timeframe_order, d.indic_order_significant
-                """
+        sql_text = """  SELECT h.signal_list_name, h.trigger_usability,h.timeframe,
+                            d."indicator",d.indic_order_significant as priority, d.signalname, d.active
+                        FROM public.signal_list h
+                        inner join public.signals d on d.signal_list_id = h.signal_list_id 
+                        where h.signal_list_name = :signal_list_name 
+                        --and d.active = 1
+                        order by h.signal_list_name, h.trigger_usability,h.timeframe_order,d."indicator" , d.indic_order_significant
+                ; """
         
         sql_text = sql_text.replace("\n"," ")
         result = db.execute( text(sql_text),
@@ -208,7 +208,7 @@ async def consultAll(inParams: signal):
         return {
             "result": "OK",
             "error": "NA",
-            "inParams": dataFrame_result.to_dict(orient='records'),
+            "dtResult": dataFrame_result.to_dict(orient='records'),
         }
     except SQLAlchemyError as e:
         print("Database Error:", e)
