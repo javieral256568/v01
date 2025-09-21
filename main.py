@@ -82,7 +82,7 @@ async def create_item(inParams: signal):
         #          AND tbl_sl.trigger_usability = :trigger_usability
         #          AND tbl_s.signalname = :signalname
         #        """
-        sql_text = """ SSELECT h.signal_list_name, h.trigger_usability,h.timeframe,
+        sql_text = """ SELECT h.signal_list_name, h.trigger_usability,h.timeframe,
                         d.indic_order_significant as priority, d.signalname, d.active
                     FROM public.signal_list h
                     inner join public.signals d on d.signal_list_id = h.signal_list_id 
